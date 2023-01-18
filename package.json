@@ -1,10 +1,10 @@
 {
-  "name": "express-notion",
+  "name": "web-notion",
   "version": "1.0.0",
   "description": "Host notion documents as webpages.",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "test": "ok"
+    "start": "node app.js"
   },
   "keywords": [
     "notion"
