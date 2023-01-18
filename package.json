@@ -1,7 +1,7 @@
 {
   "name": "web-notion",
   "version": "1.0.0",
-  "description": "Host notion documents as webpages.",
+  "description": "Lightweight express.js handlebars web-server based on notion pages.",
   "main": "app.js",
   "scripts": {
     "start": "node app.js"

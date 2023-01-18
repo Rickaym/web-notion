@@ -9,8 +9,6 @@ config.notion.subpages
   .filter((page) => page.customSlug)
   .forEach((page) => (redirectSlugs[page.slug] = page.customSlug));
 
-const RE_LAST_PATH = /[^\/]*$/;
-
 const FS_URL_MAP = {
   cacheDir: "./public",
   staticDir: "./public",
@@ -24,9 +22,9 @@ function existsCache() {
   );
 }
 
-async function prepareDocumentContent(documentUrl, forceCache = false) {
+async function prepareDocumentContent(pageUrl, forceCache = false) {
   if (!existsCache() || forceCache) {
-    cachedDocumentContent = await crawlDocument(documentUrl);
+    cachedDocumentContent = await crawlDocument(pageUrl);
   } else {
     cachedDocumentContent = JSON.parse(
       fs.readFileSync(
@@ -40,11 +38,11 @@ function getDocumentContent(slug = "index") {
   return cachedDocumentContent[slug];
 }
 
-async function crawlDocument(documentUrl) {
+async function crawlDocument(pageUrl) {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
   const documentContent = {};
-  await fetchDocumentContent(page, documentUrl, documentContent);
+  await fetchDocumentContent(page, pageUrl, documentContent);
   fs.writeFile(
     `${FS_URL_MAP["cacheDir"]}/${FS_URL_MAP["contentJsonName"]}`,
     JSON.stringify(documentContent),
@@ -58,7 +56,7 @@ async function crawlDocument(documentUrl) {
   return documentContent;
 }
 
-async function fetchDocumentContent(page, documentUrl, documentContent) {
+async function fetchDocumentContent(page, pageUrl, documentContent) {
   /**
    * Extracts required HTML components from a notion share URL.
    *
@@ -67,7 +65,7 @@ async function fetchDocumentContent(page, documentUrl, documentContent) {
    *    stylesheet
    */
 
-  let slug = getSlug(documentUrl);
+  let slug = getSlug(pageUrl);
 
   // Index document will be referenced using 'index'
   // rather than its original slug.
@@ -83,11 +81,11 @@ async function fetchDocumentContent(page, documentUrl, documentContent) {
     return;
   }
 
-  console.log(`Fetching "${documentUrl}" slug "${slug}"`);
+  console.log(`Fetching "${pageUrl}" slug "${slug}"`);
   const pageContent = {};
   documentContent[slug] = pageContent;
   try {
-    await page.goto(documentUrl, { waitUntil: "networkidle0" });
+    await page.goto(pageUrl, { waitUntil: "networkidle0" });
     await page.waitForSelector("div.notion-presence-container");
 
     const topbar = await page.$eval(
