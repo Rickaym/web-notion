@@ -1,7 +1,7 @@
 const puppeteer = require("puppeteer");
-const axios = require("axios");
 const fs = require("fs");
 const config = require("../notion.config");
+const { getSlug, isShareUrl } = require("./notion");
 
 // Filter pages that has a custom slug
 const redirectSlugs = {};
@@ -17,16 +17,6 @@ const FS_URL_MAP = {
   contentJsonName: "documentContent.json",
 };
 let cachedDocumentContent;
-
-async function fetch(url, saveTo) {
-  response = await axios.get(url);
-  fs.writeFile(saveTo, response.text, (err) => {
-    if (err) {
-      console.error(err);
-    }
-    cachedDocumentFrame = frame;
-  });
-}
 
 function existsCache() {
   return fs.existsSync(
@@ -46,14 +36,6 @@ async function prepareDocumentContent(documentUrl, forceCache = false) {
   }
 }
 
-function write(to, content) {
-  return fs.writeFile(to, content, (err) => {
-    if (err) {
-      console.error(err);
-    }
-  });
-}
-
 function getDocumentContent(slug = "index") {
   return cachedDocumentContent[slug];
 }
@@ -63,6 +45,15 @@ async function crawlDocument(documentUrl) {
   const page = await browser.newPage();
   const documentContent = {};
   await fetchDocumentContent(page, documentUrl, documentContent);
+  fs.writeFile(
+    `${FS_URL_MAP["cacheDir"]}/${FS_URL_MAP["contentJsonName"]}`,
+    JSON.stringify(documentContent),
+    (err) => {
+      if (err) {
+        console.error(err);
+      }
+    }
+  );
   await browser.close();
   return documentContent;
 }
@@ -76,7 +67,7 @@ async function fetchDocumentContent(page, documentUrl, documentContent) {
    *    stylesheet
    */
 
-  let slug = documentUrl.split("/").pop();
+  let slug = getSlug(documentUrl);
 
   // Index document will be referenced using 'index'
   // rather than its original slug.
@@ -87,7 +78,14 @@ async function fetchDocumentContent(page, documentUrl, documentContent) {
   if (Object.keys(redirectSlugs).includes(slug)) {
     slug = redirectSlugs[slug];
   }
+
+  if (Object.keys(documentContent).includes(slug)) {
+    return;
+  }
+
   console.log(`Fetching "${documentUrl}" slug "${slug}"`);
+  const pageContent = {};
+  documentContent[slug] = pageContent;
   try {
     await page.goto(documentUrl, { waitUntil: "networkidle0" });
     await page.waitForSelector("div.notion-presence-container");
@@ -96,18 +94,18 @@ async function fetchDocumentContent(page, documentUrl, documentContent) {
       "div.notion-topbar",
       (topbar) => topbar.outerHTML
     );
-    documentContent["topbar"] = topbar;
+    pageContent["topbar"] = topbar;
 
     const frame = await page.$eval(
       "div.notion-frame",
       (frame) => frame.outerHTML
     );
-    documentContent["frame"] = frame;
+    pageContent["frame"] = frame;
 
     // Ammending slugs occur before it is ever cached
     Object.keys(redirectSlugs).forEach(
       (slug) =>
-        (documentContent["frame"] = documentContent["frame"].replace(
+        (pageContent["frame"] = pageContent["frame"].replace(
           slug,
           redirectSlugs[slug]
         ))
@@ -116,24 +114,18 @@ async function fetchDocumentContent(page, documentUrl, documentContent) {
     const styles = await page.$$eval("link[rel='stylesheet']", (link) =>
       link.map((l) => l.href)
     );
-    documentContent["styles"] = styles
+    pageContent["styles"] = styles
       .map((href) => `<link href='${href}' rel='stylesheet'>`)
       .join("\n");
-
-    write(
-      `${FS_URL_MAP["cacheDir"]}/${FS_URL_MAP["contentJsonName"]}`,
-      JSON.stringify(documentContent)
-    );
 
     // Fetch subpages
     const subpages = await page.$$eval(
       "a[rel='noopener noreferrer']",
-      (aTags) => aTags.map((a) => a.href)
+      (aTags) => aTags.map((a) => a.href).filter(href => isShareUrl(config.notion.domain, href))
     );
-    subpages.forEach((url) => {
-      fetchDocumentContent(page, url, documentContent);
-    });
-    return documentContent;
+    for (let url of subpages) {
+      await fetchDocumentContent(page, url, documentContent);
+    }
   } catch (error) {
     console.error(error);
   }

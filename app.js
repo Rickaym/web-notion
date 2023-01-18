@@ -5,6 +5,7 @@ const {
   prepareDocumentContent,
   getDocumentContent,
 } = require("./core/scraper");
+const { getShareUrl } = require("./core/notion");
 
 function initApp() {
   const app = express();
@@ -28,7 +29,7 @@ function initApp() {
     return res.render("default", {
       layout: "index",
       title: config.app.name,
-      ...getDocumentContent('index'),
+      ...getDocumentContent("index"),
     });
   });
 
@@ -48,5 +49,6 @@ function initApp() {
 }
 
 prepareDocumentContent(
-  `https://${config.notion.domain}.notion.site/${config.notion.slug}`, forceCache=true
+  getShareUrl(config.notion.domain, config.notion.slug),
+  (forceCache = true)
 ).then(() => initApp());
