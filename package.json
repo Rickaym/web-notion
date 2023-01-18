@@ -1,0 +1,20 @@
+{
+  "name": "express-notion",
+  "version": "1.0.0",
+  "description": "Host notion documents as webpages.",
+  "main": "index.js",
+  "scripts": {
+    "test": "ok"
+  },
+  "keywords": [
+    "notion"
+  ],
+  "author": "Ricky",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.2.2",
+    "express": "^4.18.2",
+    "express-handlebars": "^6.0.6",
+    "puppeteer": "^19.5.2"
+  }
+}
