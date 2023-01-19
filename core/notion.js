@@ -2,16 +2,21 @@ function getSlug(pageUrl) {
   return pageUrl.split("/").pop();
 }
 
+function getShareURI(domain) {
+  return `https://${domain}.notion.site/`;
+}
+
 function getShareUrl(domain, slug) {
-  return `https://${domain}.notion.site/${slug}`;
+  return `${getShareURI(domain)}${slug}`;
 }
 
 function isShareUrl(domain, pageUrl) {
-  return pageUrl.startsWith(`https://${domain}.notion.site/`);
+  return pageUrl.startsWith(getShareURI(domain));
 }
 
 module.exports = {
   getSlug: getSlug,
   getShareUrl: getShareUrl,
   isShareUrl: isShareUrl,
+  getShareURI: getShareURI,
 };
