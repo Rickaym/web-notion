@@ -1,11 +1,13 @@
-const config = {
+module.exports = {
   app: {
     port: 3000,
     name: "Literaturamo",
+    staticDir: "public",
   },
   notion: {
     domain: "rickaym",
     slug: "Literaturamo-9ca048932d004d91b8efa3d91dea2e4d",
+    linkPage: true,
     subpages: [
       {
         slug: "Wireframe-Design-cd66be09b9a24df7bf2924bbf4079fe7",
@@ -18,5 +20,3 @@ const config = {
     ],
   },
 };
-
-module.exports = config;
