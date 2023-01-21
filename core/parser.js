@@ -1,7 +1,7 @@
 const fs = require("fs");
 const puppeteer = require("puppeteer");
 const config = require("../notion.config");
-const { getSlug, isShareUrl, getShareURI } = require("./notion");
+const { getSlug, isShareUrl, getShareURI, getShareUrl } = require("./notion");
 
 // Filter pages that has a custom slug
 const slugCustomSlugMap = {};
@@ -103,6 +103,10 @@ function preparePageContent(HTML) {
    * Swap shared workspace relative URLs to absolute URLs.
    */
   const RE_RELATIVE_IMAGE_URL = /url\(&quot;\/images\//g;
+  Object.keys(slugCustomSlugMap).forEach(
+    (slug) => (HTML = HTML.replace(slug, slugCustomSlugMap[slug]))
+  );
+
   return HTML.replace(
     RE_RELATIVE_IMAGE_URL,
     `url(&quot;${getShareURI(config.notion.domain)}images/`
@@ -127,6 +131,7 @@ async function fetchPageContent(page, pageUrl, siteData) {
     await page.goto(pageUrl, { waitUntil: "networkidle0" });
     await page.waitForSelector("div.notion-presence-container");
 
+    fs.writeFile("test.html", await page.content(), (d) => {});
     const topbar = preparePageContent(
       // We have to get the parentNode here since it contains the main CSS
       await page.$eval(
@@ -139,19 +144,23 @@ async function fetchPageContent(page, pageUrl, siteData) {
     // Heading unable to be parsed through regex should be set to null
     pageContent.heading = (topbar.match(RE_TOPBAR_HEADING) || [null, null])[1];
 
-    const frame = preparePageContent(
+    pageContent.frame = preparePageContent(
       await page.$eval("div.notion-frame", (frame) => frame.outerHTML)
     );
-    pageContent.frame = frame;
 
-    // Ammending slugs occur before it is ever cached
-    Object.keys(slugCustomSlugMap).forEach(
-      (slug) =>
-        (pageContent.frame = pageContent.frame.replace(
-          slug,
-          slugCustomSlugMap[slug]
-        ))
+    pageContent.logo = await page.$$eval(
+      "div.notion-frame div.notion-record-icon.notranslate img",
+      (images) =>
+        images.map((img) => img.src).find((src) => !src.startsWith("data:"))
     );
+
+    // empty logos will get the notion favicon
+    if (!pageContent.logo) {
+      pageContent.logo = getShareUrl(
+        config.notion.domain,
+        "images/favicon.ico"
+      );
+    }
 
     const styles = await page.$$eval("link[rel='stylesheet']", (link) =>
       link.map((l) => l.href)
