@@ -1,18 +1,22 @@
 const express = require("express");
 const hbs = require("express-handlebars");
 const config = require("./notion.config");
+const pinoLogger = require('pino');
 
-const pino = require("pino-http")({
-  quietReqLogger: true, // turn off the default logging output
-  transport: {
-    target: "pino-http-print", // use the pino-http-print transport and its formatting output
-    options: {
-      destination: 1,
-      all: true,
-      translateTime: true,
+const pino = require("pino-http")(
+  {
+    quietReqLogger: true, // turn off the default logging output
+    transport: {
+      target: "pino-http-print", // use the pino-http-print transport and its formatting output
+      options: {
+        destination: 1,
+        all: true,
+        translateTime: true,
+      },
     },
   },
-});
+  pinoLogger.pino.destination(`${__dirname}/logs/combined.log`)
+);
 
 const {
   prepareDocumentContent,
@@ -26,7 +30,6 @@ function initApp() {
   const app = express();
 
   // Initializing handlebars engine
-  console.log(require("./core/frontend/helpers/helpers"));
   app.engine(
     "hbs",
     hbs.engine({
@@ -81,5 +84,5 @@ function initApp() {
 
 prepareDocumentContent(
   getShareUrl(config.notion.domain, config.notion.slug),
-  // (forceCache = true)
+  // forceCache = true
 ).then(() => initApp());
