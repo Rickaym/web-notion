@@ -4,6 +4,7 @@
   "description": "Lightweight express.js handlebars web-server based on notion pages.",
   "main": "app.js",
   "scripts": {
+    "debug": "nodemon app.js",
     "start": "node app.js"
   },
   "keywords": [
@@ -17,5 +18,8 @@
     "pino-http": "^8.3.1",
     "pino-http-print": "^3.1.0",
     "puppeteer": "^19.5.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
   }
 }
