@@ -7,9 +7,9 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    {{#with (get_page 'index')}}
-      {{{styles}}}
-    {{/with}}
+    <link rel="shortcut icon" type="image/x-icon" href="{{get_page 'index' 'logo'}}">
+    {{{get_page 'index' 'styles'}}}
+    <link href='styles.css' rel='stylesheet'>
   </head>
   <body>
     {{#with (get_page 'index')}}
