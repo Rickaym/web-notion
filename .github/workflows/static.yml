@@ -24,6 +24,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Set up environment variables
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+
       - name: Checkout
         uses: actions/checkout@v2
 
