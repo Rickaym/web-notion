@@ -7,12 +7,19 @@ const { Client } = require("@notionhq/client");
 
 config();
 
-let partialsDir = "./views/partials";
-const partialFiles = fs.readdirSync(partialsDir);
-partialFiles.forEach((file) => {
+fs.readdirSync(notionCfg.app.partialsDirectory).forEach((file) => {
   const partialName = file.split(".").slice(0, -1).join(".");
-  const partialContent = fs.readFileSync(`${partialsDir}/${file}`, "utf-8");
+  const partialContent = fs.readFileSync(
+    `${notionCfg.app.partialsDirectory}/${file}`,
+    "utf-8"
+  );
   handlebars.registerPartial(partialName, partialContent);
+});
+
+// register helpers
+const helpers = require("./helpers");
+Object.keys(helpers).forEach((helperName) => {
+  handlebars.registerHelper(helperName, helpers[helperName]);
 });
 
 const converter = new showdown.Converter();
