@@ -53,6 +53,7 @@ async function blocksToMarkdown(blocks) {
     });
     const l = markdown.length - 1;
 
+
     switch (block.type) {
       case "heading_1":
         markdown[l] += `# ${text}\n\n`;
@@ -125,7 +126,9 @@ async function blocksToMarkdown(blocks) {
         markdown[l] += `[${block.child_page.title}](./${slug})\n\n`;
         break;
       case "callout":
-        markdown.push(`{{> ${block.type} content="${text}"}}\n\n`);
+        // md to html conversion must happen here, it will not be picked up later
+        // escape any sensitive characters
+        markdown.push(`{{> ${block.type} content='${converter.makeHtml(text)}'}}\n\n`);
         markdown.push("");
         break;
       case "unsupported":
