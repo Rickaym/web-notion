@@ -1,7 +1,6 @@
 node_modules
-.**
-!.gitignore
-!.github
 logs/**
 build/**
+.env
 **.json
+!nodemon.json
