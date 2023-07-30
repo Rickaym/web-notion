@@ -63,14 +63,14 @@ function generateStatic() {
     }
   }
 
-  try {
-    fsExtra.copySync(
-      `${notionCfg.app.staticDirectory}`,
-      `${notionCfg.app.buildDirectory}`
-    );
-  } catch (err) {
-    console.error("Error copying files:", err);
-  }
+  // try {
+  //   fsExtra.copySync(
+  //     `${notionCfg.app.staticDirectory}`,
+  //     `${notionCfg.app.buildDirectory}`
+  //   );
+  // } catch (err) {
+  //   console.error("Error copying files:", err);
+  // }
   console.log("Build ended successfully.");
 }
 
