@@ -1,22 +1,16 @@
 module.exports = {
   app: {
     port: 3000,
-    name: "Literaturamo",
-    staticDir: "public",
+    name: "Web-Notion",
+    staticDirectory: "./public",
+    viewsDirectory: "./views",
+    partialsDirectory: "./views/partials",
+    buildDirectory: "./build",
+
   },
   notion: {
     domain: "rickaym",
-    slug: "Literaturamo-9ca048932d004d91b8efa3d91dea2e4d",
-    linkPage: true,
-    subpages: [
-      {
-        slug: "Wireframe-Design-cd66be09b9a24df7bf2924bbf4079fe7",
-        customSlug: "design",
-      },
-      {
-        slug: "Roadmap-afb941f203b947c08a80fa0b38b84cb7",
-        customSlug: "roadmap",
-      },
-    ],
+    databaseId: "c30f99b58b264a42b613070b56c88300",
+    linkOriginalPage: true
   },
 };

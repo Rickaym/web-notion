@@ -1,7 +1,8 @@
 const express = require("express");
-const hbs = require("express-handlebars");
-const config = require("./notion.config");
-const pinoLogger = require('pino');
+const exphbs = require("express-handlebars");
+const notionCfg = require("./notion.config");
+const pinoLogger = require("pino");
+const { loadDatabase, SITE_DATA } = require("./core/notion");
 
 const pino = require("pino-http")(
   {
@@ -18,45 +19,36 @@ const pino = require("pino-http")(
   pinoLogger.pino.destination(`${__dirname}/logs/combined.log`)
 );
 
-const {
-  prepareDocumentContent,
-  getSiteData,
-  getPageContent,
-} = require("./core/parser");
-const { getShareUrl } = require("./core/notion");
+const hbs = exphbs.create({
+  extname: "hbs",
+  partialsDir: __dirname + notionCfg.app.partialsDirectory,
+  helpers: require("./core/helpers"),
+});
+
+hbs.getPartials()
 
 function initApp() {
-  hbs.register;
   const app = express();
-
   // Initializing handlebars engine
-  app.engine(
-    "hbs",
-    hbs.engine({
-      extname: "hbs",
-      partialsDir: __dirname + "/views/partials",
-      helpers: require("./core/frontend/helpers/helpers"),
-    })
-  );
+  app.engine("hbs", hbs.engine);
   app.set("view engine", "hbs");
-  app.set("views", "./views");
+  app.set("views", notionCfg.app.viewsDirectory);
 
-  app.use(express.static(config.app.staticDir || "public"));
+  app.use(express.static(notionCfg.app.staticDir || "public"));
   app.use(pino);
-
-  const siteData = getSiteData();
 
   app.get("/", (req, res) =>
     res.render("index", {
       layout: false,
-      title: config.app.name,
-      ...siteData,
+      title: notionCfg.app.name,
+      pages: SITE_DATA,
+      ...SITE_DATA["index"] || {},
     })
   );
 
-  for (const page of siteData.pages) {
+  for (const page of Object.values(SITE_DATA)) {
     if (page.slug === "index") {
-      if (config.notion.linkPage) {
+      if (notionCfg.notion.linkOriginalPage) {
         app.get("/page", (req, res) => res.redirect(page.pageUrl));
       }
       continue;
@@ -65,24 +57,21 @@ function initApp() {
     app.get(`/${page.slug}`, (req, res) =>
       res.render("page", {
         layout: false,
-        title: config.app.name,
-        ...getPageContent(page.slug),
+        title: notionCfg.app.name,
+        ...page,
       })
     );
 
-    if (config.notion.linkPage) {
+    if (notionCfg.notion.linkOriginalPage) {
       app.get(`/${page.slug}/page`, (req, res) => res.redirect(page.pageUrl));
     }
   }
 
-  app.listen(config.app.port, () => {
+  app.listen(notionCfg.app.port, () => {
     console.log(
-      `App "${config.app.name}" listening on http://localhost:${config.app.port}`
+      `App "${notionCfg.app.name}" listening on http://localhost:${notionCfg.app.port}`
     );
   });
 }
 
-prepareDocumentContent(
-  getShareUrl(config.notion.domain, config.notion.slug),
-  // forceCache = true
-).then(() => initApp());
+loadDatabase(true).then(() => initApp());
