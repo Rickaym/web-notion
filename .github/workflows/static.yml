@@ -2,10 +2,9 @@
 name: Deploy Static Content
 
 on:
-  # Runs on pushes targeting the default branch and pull requests
   push:
     branches:
-      - master # Replace with your default branch name
+      - master
   pull_request:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages

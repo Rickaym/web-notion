@@ -5,7 +5,7 @@ const handlebars = require("handlebars");
 const notionCfg = require("../notion.config");
 const { Client } = require("@notionhq/client");
 
-// config();
+config();
 
 let partialsDir = "./views/partials";
 const partialFiles = fs.readdirSync(partialsDir);
