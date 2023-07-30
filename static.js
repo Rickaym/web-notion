@@ -3,8 +3,8 @@ const fsExtra = require("fs-extra");
 const notionCfg = require("./notion.config");
 const { loadDatabase, SITE_DATA, handlebars } = require("./core/notion");
 
-if (!fs.existsSync(config.buildDirectory)) {
-  fs.mkdirSync(config.buildDirectory);
+if (!fs.existsSync(notionCfg.app.buildDirectory)) {
+  fs.mkdirSync(notionCfg.app.buildDirectory);
 }
 function generateFile(slug, content) {
   fs.writeFileSync(`${notionCfg.app.buildDirectory}/${slug}.html`, content);
