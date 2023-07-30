@@ -24,10 +24,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set up environment variables
-        env:
-          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
-
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -35,6 +31,8 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: "16.x"
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
 
       - run: npm ci
       - run: npm run build
