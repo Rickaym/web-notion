@@ -1,20 +1,29 @@
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>{{get_page 'index' 'heading'}}</title>
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-    />
-    <link rel="shortcut icon" type="image/x-icon" href="{{get_page 'index' 'logo'}}">
-    {{{get_page 'index' 'styles'}}}
-    <link href='styles.css' rel='stylesheet'>
-  </head>
-  <body>
-    {{#with (get_page 'index')}}
-      {{{topbar}}}
-      {{{frame}}}
-    {{/with}}
-  </body>
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>{{title}}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <link rel="shortcut icon" type="image/x-icon" href="logo">
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+  <link href='styles.css' rel='stylesheet'>
+  <link href='normalize.css' rel='stylesheet'>
+  <link href='skeleton.css' rel='stylesheet'>
+  <script>hljs.highlightAll();</script>
+  <meta name="description" content="{{previewContent}}">
+  <meta name="keywords"
+    content="markdown, blog, engine, simple, lightweight, easy, use, nodejs, javascript, js, html, css, hbs, handlebars, express, github, git, github-pages, github-pages-blog, github-pages-blog-engine, github-pages-blog-engine-nodejs, github-pages-blog-engine-nodejs-express, github-pages-blog-engine-nodejs-express-handlebars, github-pages-blog-engine-nodejs-express-handlebars-markdown, github-pages-blog-engine-nodejs-express-handlebars-markdown-blog, github-pages-blog-engine-nodejs-express-handlebars-markdown-blog-engine, github-pages-blog-engine-nodejs-express-handlebars-markdown-blog-engine-simple, github-pages-blog-engine-nodejs-express-handlebars-markdown-blog-engine-simple-lightweight, github-pages-blog-engine-nodejs-express-handlebars-markdown-blog-engine-simple-lightweight-easy, github-pages-blog-engine-nodejs-express-handlebars-markdown-blog-engine-simple-lightweight-easy-use">
+  <meta name="author" content="github.com/rickaym">
+  <meta name="title" content="{{title}}">
+</head>
+
+<body>
+  <div class="container">
+    <h1 class="pt-8">{{title}}</h1>
+    {{{content}}}
+  </div>
+</body>
+
 </html>
