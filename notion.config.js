@@ -6,10 +6,8 @@ module.exports = {
     viewsDirectory: "./views",
     partialsDirectory: "./views/partials",
     buildDirectory: "./build",
-
   },
   notion: {
-    domain: "rickaym",
     databaseId: "c30f99b58b264a42b613070b56c88300",
     linkOriginalPage: true
   },
