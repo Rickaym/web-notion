@@ -1,5 +1,7 @@
 # Web-Notion
 
+[![Deploy Static Content](https://github.com/Rickaym/web-notion/actions/workflows/static.yml/badge.svg)](https://github.com/Rickaym/web-notion/actions/workflows/static.yml)
+
 Web-notion is an express-handlebar based web server that uses Notion as a database to source content. It is built to be hosted on a server, but can also be hosted statically.
 
 # Table of Contents
