@@ -45,11 +45,3 @@ export function get_datetime(date) {
     })
     .toUpperCase();
 }
-
-export default {
-  get_content_slice,
-  get_page,
-  get_latest,
-  get_readtime,
-  get_datetime,
-};

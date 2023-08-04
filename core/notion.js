@@ -3,7 +3,7 @@ import { config } from "dotenv";
 import Converter from "showdown";
 import handlebars from "handlebars";
 import { app, notion as _notion } from "../notion.config.js";
-import helpers from "./helpers.js";
+import * as helpers from "./helpers.js";
 import { Client } from "@notionhq/client";
 
 config();
@@ -140,7 +140,7 @@ async function blocksToContentDict(blocks) {
     }
   }
 
-  return {markdown: mdContent, text: txtContent};
+  return { markdown: mdContent, text: txtContent };
 }
 
 async function getPageContent(pageId) {
