@@ -21,12 +21,15 @@ function generateStatic() {
     .readFileSync(`${notionCfg.app.viewsDirectory}/redirect.hbs`, "utf-8")
     .toString();
 
+  const pages = {...SITE_DATA};
+  delete pages['index'];
+
   generateFile(
     "index",
     handlebars.compile(indexContent)({
       layout: false,
       title: notionCfg.app.name,
-      pages: SITE_DATA,
+      pages: pages,
       ...(SITE_DATA["index"] || {}),
     })
   );

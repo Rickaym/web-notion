@@ -34,8 +34,9 @@ function makeTitleSlug(title) {
     .replace(/[^\w-]+/g, "");
 }
 
-async function blocksToMarkdown(blocks) {
-  let markdown = [""];
+async function blocksToContentDict(blocks) {
+  let mdContent = [""];
+  let txtContent = "";
 
   for (const block of blocks) {
     let text = "";
@@ -51,41 +52,42 @@ async function blocksToMarkdown(blocks) {
       if (rich_text.href) partialText = `[${partialText}](${rich_text.href})`;
       text += partialText;
     });
-    const l = markdown.length - 1;
+    txtContent += text;
+    const l = mdContent.length - 1;
 
     switch (block.type) {
       case "heading_1":
-        markdown[l] += `# ${text}\n\n`;
+        mdContent[l] += `# ${text}\n\n`;
         break;
       case "heading_2":
-        markdown[l] += `## ${text}\n\n`;
+        mdContent[l] += `## ${text}\n\n`;
         break;
       case "heading_3":
-        markdown[l] += `### ${text}\n\n`;
+        mdContent[l] += `### ${text}\n\n`;
         break;
       case "paragraph":
-        markdown[l] += `${text}\n\n`;
+        mdContent[l] += `${text}\n\n`;
         break;
       case "bulleted_list_item":
-        markdown[l] += `* ${text}\n`;
+        mdContent[l] += `* ${text}\n`;
         break;
       case "numbered_list_item":
-        markdown[l] += `1. ${text}\n`;
+        mdContent[l] += `1. ${text}\n`;
         break;
       case "to_do":
-        markdown[l] += `- [ ] ${text}\n`;
+        mdContent[l] += `- [ ] ${text}\n`;
         break;
       case "toggle":
-        markdown[l] += `> ${text}\n`;
+        mdContent[l] += `> ${text}\n`;
         break;
       case "quote":
-        markdown[l] += `> ${text}\n`;
+        mdContent[l] += `> ${text}\n`;
         break;
       case "video":
-        markdown[l] += `${text}\n\n`;
+        mdContent[l] += `${text}\n\n`;
         break;
       case "code":
-        markdown[
+        mdContent[
           l
         ] += `\`\`\`${block.code.language}\n${block.code.rich_text[0].plain_text}\n\`\`\`\n\n`;
         break;
@@ -107,7 +109,7 @@ async function blocksToMarkdown(blocks) {
       case "table_row":
       case "template":
       case "pdf":
-        markdown[l] += `${text}\n\n`;
+        mdContent[l] += `${text}\n\n`;
         break;
       case "child_page":
         const page = await notion.pages.retrieve({ page_id: block.id });
@@ -115,6 +117,7 @@ async function blocksToMarkdown(blocks) {
         SITE_DATA[page.slug] = {
           id: page.id,
           createdTime: page.created_time,
+          lastEditedTime: page.last_edited_time,
           slug: slug,
           title: block.child_page.title,
           pageUrl: page.url,
@@ -122,22 +125,22 @@ async function blocksToMarkdown(blocks) {
           cover: page.cover,
           content: await getPageContent(page.id),
         };
-        markdown[l] += `[${block.child_page.title}](./${slug})\n\n`;
+        mdContent[l] += `[${block.child_page.title}](./${slug})\n\n`;
         break;
       case "callout":
         // md to html conversion must happen here, it will not be picked up later
         // escape any sensitive characters
-        markdown.push(
+        mdContent.push(
           `{{> ${block.type} content='${converter.makeHtml(text)}'}}\n\n`
         );
-        markdown.push("");
+        mdContent.push("");
         break;
       case "unsupported":
         break;
     }
   }
 
-  return markdown;
+  return {markdown: mdContent, text: txtContent};
 }
 
 async function getPageContent(pageId) {
@@ -149,15 +152,16 @@ async function getPageContent(pageId) {
     page_size: 50,
   });
 
-  const markdown = await blocksToMarkdown(blocks.results);
-  const html = markdown
+  const content = await blocksToContentDict(blocks.results);
+  const htmlContent = content.markdown
     .map((text) =>
       text.startsWith("{{")
         ? handlebars.compile(text)()
         : converter.makeHtml(text)
     )
     .join("");
-  return html;
+  content.html = htmlContent;
+  return content;
 }
 
 async function getDatabase(databaseId, withContent) {
@@ -185,7 +189,8 @@ async function getDatabase(databaseId, withContent) {
     rows.push({
       id: page.id,
       createdTime: page.created_time,
-      slug: page.properties.Slug.rich_text[0].plain_text,
+      lastEditedTime: page.last_edited_time,
+      slug: slug,
       title: title,
       pageUrl: page.url,
       icon: page.icon,
@@ -195,18 +200,6 @@ async function getDatabase(databaseId, withContent) {
   }
 
   return rows;
-}
-
-async function reloadDatabase() {
-  const rows = await getDatabase(notionCfg.notion.databaseId, false);
-  for (const row of rows) {
-    if (SITE_DATA[row.slug] === undefined) {
-      row.content = await getPageContent(row.id);
-      SITE_DATA[row.slug] = row;
-    } else if (SITE_DATA[row.slug].last_edited_time !== row.last_edited_time) {
-      SITE_DATA[row.slug].content = await getPageContent(row.id);
-    }
-  }
 }
 
 async function loadDatabase() {
