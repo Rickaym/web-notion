@@ -34,6 +34,13 @@ function makeTitleSlug(title) {
     .replace(/[^\w-]+/g, "");
 }
 
+function replaceNotionURL(url) {
+  return url.replace(
+    /notion:\/\/www\.notion\.so\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)(#\S*)?/g,
+    './$2$3'
+  );
+}
+
 async function blocksToContentDict(blocks) {
   let mdContent = [""];
   let txtContent = "";
@@ -52,6 +59,7 @@ async function blocksToContentDict(blocks) {
       if (rich_text.href) partialText = `[${partialText}](${rich_text.href})`;
       text += partialText;
     });
+    text = replaceNotionURL(text);
     txtContent += text;
     const l = mdContent.length - 1;
 
