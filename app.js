@@ -1,10 +1,12 @@
-const express = require("express");
-const exphbs = require("express-handlebars");
-const notionCfg = require("./notion.config");
-const pinoLogger = require("pino");
-const { loadDatabase, SITE_DATA } = require("./core/notion");
+import express, { static as static_ } from "express";
+import { create } from "express-handlebars";
+import { app as _app, notion } from "./notion.config.js";
+import { pino as _pino } from "pino";
+import { loadDatabase, SITE_DATA } from "./core/notion.js";
+import pinoHttp from "pino-http";
+import helpers from "./core/helpers.js";
 
-const pino = require("pino-http")(
+const pino = pinoHttp(
   {
     quietReqLogger: true, // turn off the default logging output
     transport: {
@@ -16,39 +18,39 @@ const pino = require("pino-http")(
       },
     },
   },
-  pinoLogger.pino.destination(`${__dirname}/logs/combined.log`)
+  _pino.destination(`./logs/combined.log`)
 );
 
-const hbs = exphbs.create({
+const hbs = create({
   extname: "hbs",
-  partialsDir: __dirname + notionCfg.app.partialsDirectory,
-  helpers: require("./core/helpers"),
+  partialsDir: _app.partialsDirectory,
+  helpers: helpers,
 });
 
-hbs.getPartials()
+hbs.getPartials();
 
 function initApp() {
   const app = express();
   // Initializing handlebars engine
   app.engine("hbs", hbs.engine);
   app.set("view engine", "hbs");
-  app.set("views", notionCfg.app.viewsDirectory);
+  app.set("views", _app.viewsDirectory);
 
-  app.use(express.static(notionCfg.app.staticDir || "public"));
+  app.use(static_(_app.staticDir || "public"));
   app.use(pino);
 
   app.get("/", (req, res) =>
     res.render("index", {
       layout: false,
-      title: notionCfg.app.name,
+      title: _app.name,
       pages: SITE_DATA,
-      ...SITE_DATA["index"] || {},
+      ...(SITE_DATA["index"] || {}),
     })
   );
 
   for (const page of Object.values(SITE_DATA)) {
     if (page.slug === "index") {
-      if (notionCfg.notion.linkOriginalPage) {
+      if (notion.linkOriginalPage) {
         app.get("/page", (req, res) => res.redirect(page.pageUrl));
       }
       continue;
@@ -57,19 +59,19 @@ function initApp() {
     app.get(`/${page.slug}`, (req, res) =>
       res.render("page", {
         layout: false,
-        title: notionCfg.app.name,
+        title: _app.name,
         ...page,
       })
     );
 
-    if (notionCfg.notion.linkOriginalPage) {
+    if (notion.linkOriginalPage) {
       app.get(`/${page.slug}/page`, (req, res) => res.redirect(page.pageUrl));
     }
   }
 
-  app.listen(notionCfg.app.port, () => {
+  app.listen(_app.port, () => {
     console.log(
-      `App "${notionCfg.app.name}" listening on http://localhost:${notionCfg.app.port}`
+      `App "${_app.name}" listening on http://localhost:${_app.port}`
     );
   });
 }

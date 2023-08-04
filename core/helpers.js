@@ -1,10 +1,10 @@
-function get_content_slice(content, length, fullSentences) {
+export function get_content_slice(content, length, fullSentences) {
   return fullSentences
     ? sentence_split(content, length)
     : content.substring(0, Math.min(length, content.length));
 }
 
-function sentence_split(content, length) {
+export function sentence_split(content, length) {
   const sentences = content.split(".");
   let result = "";
   let i = 0;
@@ -15,11 +15,11 @@ function sentence_split(content, length) {
   return result;
 }
 
-function get_page(pageSlug, key) {
+export function get_page(pageSlug, key) {
   return SITE_DATA.find((page) => page.slug === pageSlug)[key];
 }
 
-function get_latest(pages) {
+export function get_latest(pages) {
   // returns the latest page
   return Object.values(pages)
     .sort((a, b) => {
@@ -28,7 +28,7 @@ function get_latest(pages) {
     .slice(0, 1)[0];
 }
 
-function get_readtime(content) {
+export function get_readtime(content) {
   const wordsPerMinute = 200;
   const noOfWords = content.split(/\s/g).length;
   const minutes = noOfWords / wordsPerMinute;
@@ -36,7 +36,7 @@ function get_readtime(content) {
   return `${readTime} MIN READ`;
 }
 
-function get_datetime(date) {
+export function get_datetime(date) {
   return new Date(date)
     .toLocaleDateString("en-US", {
       year: "numeric",
@@ -46,10 +46,10 @@ function get_datetime(date) {
     .toUpperCase();
 }
 
-module.exports = {
-  get_page: get_page,
-  get_content_slice: get_content_slice,
-  get_latest: get_latest,
-  get_readtime: get_readtime,
-  get_datetime: get_datetime,
+export default {
+  get_content_slice,
+  get_page,
+  get_latest,
+  get_readtime,
+  get_datetime,
 };

@@ -1,3 +1,7 @@
 {
-    "ext": "js,hbs"
+    "ext": "js,hbs,css",
+    "ignore": [
+        "**.json",
+        "./build/"
+    ]
 }

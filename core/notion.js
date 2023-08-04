@@ -1,30 +1,30 @@
-const fs = require("fs");
-const { config } = require("dotenv");
-const showdown = require("showdown");
-const handlebars = require("handlebars");
-const notionCfg = require("../notion.config");
-const { Client } = require("@notionhq/client");
+import { readdirSync, readFileSync } from "fs";
+import { config } from "dotenv";
+import Converter from "showdown";
+import handlebars from "handlebars";
+import { app, notion as _notion } from "../notion.config.js";
+import helpers from "./helpers.js";
+import { Client } from "@notionhq/client";
 
 config();
 
-fs.readdirSync(notionCfg.app.partialsDirectory).forEach((file) => {
+readdirSync(app.partialsDirectory).forEach((file) => {
   const partialName = file.split(".").slice(0, -1).join(".");
-  const partialContent = fs.readFileSync(
-    `${notionCfg.app.partialsDirectory}/${file}`,
+  const partialContent = readFileSync(
+    `${app.partialsDirectory}/${file}`,
     "utf-8"
   );
   handlebars.registerPartial(partialName, partialContent);
 });
 
 // register helpers
-const helpers = require("./helpers");
 Object.keys(helpers).forEach((helperName) => {
-  handlebars.registerHelper(helperName, helpers[helperName]);
+  handlebars.registerPartial(helperName, helpers[helperName]);
 });
 
-const converter = new showdown.Converter();
+const converter = new Converter.Converter();
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
-const SITE_DATA = {};
+export const SITE_DATA = {};
 const PARSED_PAGE_IDS = [];
 
 function makeTitleSlug(title) {
@@ -202,12 +202,9 @@ async function getDatabase(databaseId, withContent) {
   return rows;
 }
 
-async function loadDatabase() {
-  const rows = await getDatabase(notionCfg.notion.databaseId, true);
+export async function loadDatabase() {
+  const rows = await getDatabase(_notion.databaseId, true);
   rows.forEach((row) => (SITE_DATA[row.slug] = row));
 }
-module.exports = {
-  SITE_DATA: SITE_DATA,
-  loadDatabase: loadDatabase,
-  handlebars: handlebars,
-};
+
+export { handlebars };

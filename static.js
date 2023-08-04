@@ -1,24 +1,23 @@
-var fs = require("fs");
-const fsExtra = require("fs-extra");
-const notionCfg = require("./notion.config");
-const { loadDatabase, SITE_DATA, handlebars } = require("./core/notion");
+// STATIC SITE GENERATOR
 
-if (!fs.existsSync(notionCfg.app.buildDirectory)) {
-  fs.mkdirSync(notionCfg.app.buildDirectory);
+import { existsSync, mkdirSync, writeFileSync, readFileSync } from "fs";
+import { copySync } from "fs-extra";
+import { app, notion } from "./notion.config.js";
+import { loadDatabase, SITE_DATA, handlebars } from "./core/notion.js";
+
+if (!existsSync(app.buildDirectory)) {
+  mkdirSync(app.buildDirectory);
 }
 function generateFile(slug, content) {
-  fs.writeFileSync(`${notionCfg.app.buildDirectory}/${slug}.html`, content);
+  writeFileSync(`${app.buildDirectory}/${slug}.html`, content);
 }
 
 function generateStatic() {
-  const indexContent = fs
-    .readFileSync(`${notionCfg.app.viewsDirectory}/index.hbs`, "utf-8")
+  const indexContent = readFileSync(`${app.viewsDirectory}/index.hbs`, "utf-8")
     .toString();
-  const pageContent = fs
-    .readFileSync(`${notionCfg.app.viewsDirectory}/page.hbs`, "utf-8")
+  const pageContent = readFileSync(`${app.viewsDirectory}/page.hbs`, "utf-8")
     .toString();
-  const redirectContent = fs
-    .readFileSync(`${notionCfg.app.viewsDirectory}/redirect.hbs`, "utf-8")
+  const redirectContent = readFileSync(`${app.viewsDirectory}/redirect.hbs`, "utf-8")
     .toString();
 
   const pages = {...SITE_DATA};
@@ -28,7 +27,7 @@ function generateStatic() {
     "index",
     handlebars.compile(indexContent)({
       layout: false,
-      title: notionCfg.app.name,
+      title: app.name,
       pages: pages,
       ...(SITE_DATA["index"] || {}),
     })
@@ -36,7 +35,7 @@ function generateStatic() {
 
   for (const page of Object.values(SITE_DATA)) {
     if (page.slug === "index") {
-      if (notionCfg.notion.linkOriginalPage) {
+      if (notion.linkOriginalPage) {
         generateFile(
           "page",
           handlebars.compile(redirectContent)({ pageUrl: page.pageUrl })
@@ -49,15 +48,15 @@ function generateStatic() {
       page.slug,
       handlebars.compile(pageContent)({
         layout: false,
-        title: notionCfg.app.name,
+        title: app.name,
         ...page,
       })
     );
 
-    if (notionCfg.notion.linkOriginalPage) {
-      const subdir = `${notionCfg.app.buildDirectory}/${page.slug}`;
-      if (!fs.existsSync(subdir)) {
-        fs.mkdirSync(subdir);
+    if (notion.linkOriginalPage) {
+      const subdir = `${app.buildDirectory}/${page.slug}`;
+      if (!existsSync(subdir)) {
+        mkdirSync(subdir);
       }
       generateFile(
         `${page.slug}/page`,
@@ -67,9 +66,9 @@ function generateStatic() {
   }
 
   try {
-    fsExtra.copySync(
-      `${notionCfg.app.staticDirectory}`,
-      `${notionCfg.app.buildDirectory}`
+    copySync(
+      `${app.staticDirectory}`,
+      `${app.buildDirectory}`
     );
   } catch (err) {
     console.error("Error copying files:", err);
