@@ -24,7 +24,7 @@ const pino = pinoHttp(
 const hbs = create({
   extname: "hbs",
   partialsDir: _app.partialsDirectory,
-  helpers: helpers,
+  helpers,
 });
 
 hbs.getPartials();
