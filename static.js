@@ -11,22 +11,22 @@ function generateFile(slug, content) {
 }
 
 function generateStatic() {
-  const indexContent = fs
+  const indexContent = handlebars.compile(fs
     .readFileSync(`${notionCfg.app.viewsDirectory}/index.hbs`, "utf-8")
-    .toString();
-  const pageContent = fs
+    .toString());
+  const pageContent = handlebars.compile(fs
     .readFileSync(`${notionCfg.app.viewsDirectory}/page.hbs`, "utf-8")
-    .toString();
-  const redirectContent = fs
+    .toString());
+  const redirectContent = handlebars.compile(fs
     .readFileSync(`${notionCfg.app.viewsDirectory}/redirect.hbs`, "utf-8")
-    .toString();
+    .toString());
 
-  const pages = {...SITE_DATA};
+  const pages = { ...SITE_DATA };
   delete pages['index'];
 
   generateFile(
     "index",
-    handlebars.compile(indexContent)({
+    indexContent({
       layout: false,
       title: notionCfg.app.name,
       pages: pages,
@@ -39,7 +39,7 @@ function generateStatic() {
       if (notionCfg.notion.linkOriginalPage) {
         generateFile(
           "page",
-          handlebars.compile(redirectContent)({ pageUrl: page.pageUrl })
+          redirectContent({ pageUrl: page.pageUrl })
         );
       }
       continue;
@@ -47,7 +47,7 @@ function generateStatic() {
 
     generateFile(
       page.slug,
-      handlebars.compile(pageContent)({
+      pageContent({
         layout: false,
         title: notionCfg.app.name,
         ...page,
@@ -61,7 +61,7 @@ function generateStatic() {
       }
       generateFile(
         `${page.slug}/page`,
-        handlebars.compile(redirectContent)({ pageUrl: page.pageUrl })
+        redirectContent({ pageUrl: page.pageUrl })
       );
     }
   }
