@@ -13,19 +13,22 @@ function generateFile(slug, content) {
 }
 
 function generateStatic() {
-  const indexContent = readFileSync(`${app.viewsDirectory}/index.hbs`, "utf-8")
-    .toString();
-  const pageContent = readFileSync(`${app.viewsDirectory}/page.hbs`, "utf-8")
-    .toString();
-  const redirectContent = readFileSync(`${app.viewsDirectory}/redirect.hbs`, "utf-8")
-    .toString();
+  const indexContent = handlebars.compile(fs
+    .readFileSync(`${notionCfg.app.viewsDirectory}/index.hbs`, "utf-8")
+    .toString());
+  const pageContent = handlebars.compile(fs
+    .readFileSync(`${notionCfg.app.viewsDirectory}/page.hbs`, "utf-8")
+    .toString());
+  const redirectContent = handlebars.compile(fs
+    .readFileSync(`${notionCfg.app.viewsDirectory}/redirect.hbs`, "utf-8")
+    .toString());
 
-  const pages = {...SITE_DATA};
+  const pages = { ...SITE_DATA };
   delete pages['index'];
 
   generateFile(
     "index",
-    handlebars.compile(indexContent)({
+    indexContent({
       layout: false,
       title: app.name,
       pages: pages,
@@ -38,7 +41,7 @@ function generateStatic() {
       if (notion.linkOriginalPage) {
         generateFile(
           "page",
-          handlebars.compile(redirectContent)({ pageUrl: page.pageUrl })
+          redirectContent({ pageUrl: page.pageUrl })
         );
       }
       continue;
@@ -46,7 +49,7 @@ function generateStatic() {
 
     generateFile(
       page.slug,
-      handlebars.compile(pageContent)({
+      pageContent({
         layout: false,
         title: app.name,
         ...page,
@@ -60,7 +63,7 @@ function generateStatic() {
       }
       generateFile(
         `${page.slug}/page`,
-        handlebars.compile(redirectContent)({ pageUrl: page.pageUrl })
+        redirectContent({ pageUrl: page.pageUrl })
       );
     }
   }
