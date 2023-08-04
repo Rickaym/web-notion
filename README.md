@@ -2,7 +2,7 @@
 
 [![Deploy Static Content](https://github.com/Rickaym/web-notion/actions/workflows/static.yml/badge.svg)](https://github.com/Rickaym/web-notion/actions/workflows/static.yml)
 
-Web-notion is an express-handlebar based web server that uses Notion as a database to source content. It is built to be hosted on a server, but can also be hosted statically.
+Web-notion is an express-handlebar based web server that uses Notion as a database. It is built to be hosted statically, but can also be hosted on a webserver to render updates dynamically.
 
 # Table of Contents
 
@@ -21,18 +21,30 @@ Web-notion is an express-handlebar based web server that uses Notion as a databa
 ```bash
 git clone https://github.com/Rickaym/web-notion.git
 ```
-2. Setup your Notion API integration [here](https://developers.notion.com/docs/create-a-notion-integration) and copy the integration token into `.env`
-3. Configure [`notion.config.js`](./notion.config.js); further details are in the file
-4. Design your handlebar layouts under [`/views`](./views)
-5. Run the project!
+2. Get your Notion API key by setting up an integration [here](https://developers.notion.com/docs/create-a-notion-integration)
+3. Copy the integration secret into `.env`
+4. Configure [`notion.config.js`](./notion.config.js) read the comments in the file for more information
+5. Design your html layouts (with hbs) under [`/views`](./views)
+6. Run the project
+
+```bash
+npm start
+```
 
 ## Overview
 
-Web-notion serves pages based on a notion database. This is done by mapping each page in the database to an endpoint that returns the rendered HTML of the page. The database is specified in [`notion.config.js`](./notion.config.js) and is loaded at runtime on a webserver or buildtime when statically generated.
+Web notion serves pages using a notion database. Each document in the notion database is fetched and rendered into HTML through the corresponding layout.
 
-The database is loaded using the [notion-api-worker](./core/notion.js) through the Notion API Integration.
+There are two main layouts:
 
-Web-notion serves pages through the following steps:
+1. `views/index.hbs` - this layout is used to render the root page of the website
+2. `views/page.hbs` - this layout is used for everything else; non-index and nested pages
+
+Edit these layouts to customize the website.
+
+The rendered HTML content is then mapped to a route that is the slug of the notion document.
+
+Web-notion serve pages in this manner:
 
 1. The notion database is loaded and parsed into a list of pages
 2. Each page is mapped to an endpoint
@@ -40,18 +52,9 @@ Web-notion serves pages through the following steps:
 3. When an endpoint is called, the page content is fetched from the list of pages and rendered into the specified layout using handlebars
 4. The rendered HTML is dispatched
 
-*Note: Static hosting is achieved by running through these steps once and storing them for later use*
+*Note: Static hosting is achieved by running through these steps only once and storing them for later use*
 
 This process enables us to render the decorated markdown content from Notion straight whilst still hvaing it in a custom layout.
-
-### Custom Layouts
-
-There are two main layouts web-notion uses to generate HTML pages.
-
-1. `views/index.hbs` - for generating the root page of the website
-2. `views/page.hbs` - for non-index and nested pages
-
-You can edit these layouts to customize the website.
 
 ### Handlebars
 
@@ -84,23 +87,15 @@ Hosting web-notion statically is possible. It is achieved through [a static site
 
 ### Webserver Hosting
 
-Web-notion is built to be hosted on a server and is the recommended way of hosting.
-
 Follow these steps to host web-notion on a webserver (this requires the steps in Getting Started to be done):
 
-1. Clone the repository
-2. Install dependencies
+1. Install dependencies
 
 ```bash
 npm install
 ```
-3. Run the project
+2. Run the project
 
 ```bash
 npm start
 ```
-
-*Note: You can also use `npm run dev` to run the project in development mode which will restart the server on file changes*
-
-4. Visit the website at `http://localhost:port`
-
