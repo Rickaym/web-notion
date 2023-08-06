@@ -7,12 +7,14 @@ Web-notion is an express-handlebar based web server that uses Notion as a conten
 # Table of Contents
 
 - [Get Started](#get-started)
-- [Overview](#overview)
-  - [Custom Layouts](#custom-layouts)
-  - [Handlebars](#handlebars)
+  - [Pre-requisites](#pre-requisites)
+  - [Setup Notion](#setup-notion)
+- [Requirements](#Requirements)
+- [Layouts](#layouts)
+- [Updating](#updating)
 - [Hosting](#hosting)
-    - [Static Hosting](#static-hosting)
-    - [Webserver Hosting](#webserver-hosting)
+  - [Static Hosting](#static-hosting)
+  - [Webserver Hosting](#webserver-hosting)
 
 ## Get Started
 
@@ -78,30 +80,7 @@ You can edit these layouts to customize the look of the website. When editing th
     }
 ```
 
-And additionally, `index` pages get a special variable called `pages` which is a list of all the pages (index page excluded).
-
-### Handlebars
-
-When rendering the page content into the layout, a dictionary of context values based on the notion document is provided.
-
-E.g.
-
-```json
-{
-    "id": "e78f702d-bed1-413e-9623-a93aa9b7d05d",
-    "createdTime": "2023-07-30T03:26:00.000Z",
-    "slug": "index",
-    "title": "Web-Notion",
-    "pageUrl": "https://www.notion.so/Web-Notion-e78f702dbed1413e9623a93aa9b7d05d",
-    "icon": null,
-    "cover": null,
-    "content": "..."
-}
-```
-
-Both the `page.hbs` and `index.hbs` layout have these variables at their disposal, whilst `index.hbs` is provided the context of the index page and `page.hbs` is provided the page being rendered.
-
-*Note, `index.hbs` also gets an extra variable called **pages** which is a list of all pages in the format of the object above.*
+Both the `page.hbs` and `index.hbs` layout have these variables at their disposal, whilst `index.hbs` is provided the context of the index page and `page.hbs` is provided the page being rendered. Additionally, `index` pages get a special variable called `pages` which is a list of all the pages (index page excluded).
 
 ## Updating
 
