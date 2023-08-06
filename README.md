@@ -8,13 +8,14 @@ Web-notion is an express-handlebar based web server that uses Notion as a conten
 
 - [Get Started](#get-started)
   - [Pre-requisites](#pre-requisites)
+  - [Setup Database](#setup-database)
   - [Setup Notion](#setup-notion)
-- [Requirements](#Requirements)
-- [Layouts](#layouts)
-- [Updating](#updating)
+- [Customizing the Website](#customizing-the-website)
+- [Examples](#examples)
 - [Hosting](#hosting)
   - [Static Hosting](#static-hosting)
   - [Webserver Hosting](#webserver-hosting)
+- [Updating Web-Notion](#updating-web-notion)
 
 ## Get Started
 
@@ -30,9 +31,23 @@ git clone --recurse-submodules https://github.com/Rickaym/web-notion.git
 npm install
 ```
 
+### Setup Database
+
+3. Create a new database in Notion (it doesn't need to be public)
+
+The database must have the following two columns:
+- `Name` - This is where the page itself is stored
+- `Slug` (optional) - This is where the slug of the page is stored, if a value is not present in this column, a slug will be made automatically through the name of the page
+
+E.g.
+
+![Notion Database](./readme/database.png)
+
+The content for each page should be stored inside the nested page of the `Name` column.
+
 ### Setup Notion
 
-3.  Create a Notion integration by following [Step 1: Create an integration](https://developers.notion.com/docs/create-a-notion-integration#step-1-create-an-integration) from the official docs, this is required to access the database
+4.  Create a Notion integration by following [Step 1: Create an integration](https://developers.notion.com/docs/create-a-notion-integration#step-1-create-an-integration) from the official docs, this is required to access the database
 4. Create a file named `.env` in the project root and copy the integration secret into it in the format of `NOTION_API_KEY="{secret}"`
 5. Then follow [Step 2: Share a database with your integration](https://developers.notion.com/docs/create-a-notion-integration#step-2-share-a-database-with-your-integration) and setup the database to be used with the integration
 6. Copy the ID of the database [like this](https://developers.notion.com/docs/create-a-notion-integration#step-3-save-the-database-id) and set it to `databaseId` in [`notion.config.js`](./notion.config.js)
@@ -42,25 +57,18 @@ npm install
 npm start
 ```
 
-## Requirements
+## Customizing the Website
 
-The database that is needed to be used must have the following two columns:
-1. `Name` - This is where the page itself is stored
-2. `Slug` (optional) - This is where the slug of the page is stored, if a value is not present in this column, a slug will be made automatically through the name of the page
+When web-notion serves the page, it renders the content of the Notion document into a handlebar layout. This process enables us to display the content of the page in a completely customized way, whilst still takeing advantage of the markdown format that notion provides.
 
-For example:
-![Notion Database](./readme/database.png)
-
-The content for each page should be stored inside the nested page of the `Name` column. When web-notion serves the page, it will render the content of the nested page into a handlebar layout. This process enables us to display the content of the page in a completely customizable way, and still take advantage of the markdown format that notion provides.
-
-## Layouts
+You can achieve this customization by editing the layouts in the [`views`](./views) folder.
 
 There are two main layouts that are used to render the pages:
 
 1. `views/index.hbs` - This layout is used to render the root page of the website
 2. `views/page.hbs` - This layout is used for everything else; non-index and nested pages
 
-You can edit these layouts to customize the look of the website. When editing these layouts, you are provided with the following variables:
+When editing these layouts, you are provided with the following variables through handlebars:
 
 ```json
 {
@@ -80,15 +88,17 @@ You can edit these layouts to customize the look of the website. When editing th
     }
 ```
 
-Both the `page.hbs` and `index.hbs` layout have these variables at their disposal, whilst `index.hbs` is provided the context of the index page and `page.hbs` is provided the page being rendered. Additionally, `index` pages get a special variable called `pages` which is a list of all the pages (index page excluded).
+To use these variables, you can use the following syntax in your layout:
 
-## Updating
-
-To update web-notion-core submodule (the js files that builds the website), run the following command:
-
-```bash
-cd ./core && git pull origin master && cd ..
+```handlebars
+{{variable}}
 ```
+
+While both of the layouts `page.hbs` and `index.hbs` have these variables (`index.hbs` with the context of the index page and `page.hbs` with the page being rendered) `index.hbs` gets a special variable called `pages`. It is a list object that contains all the pages (index page excluded).
+
+## Examples
+
+This repository contains an example of a customized website that runs through web-notion. Take a look at [`views/index.hbs`](./views/index.hbs) and [`views/page.hbs`](./views/page.hbs) for how the customization is best done.
 
 ## Hosting
 
@@ -109,4 +119,13 @@ npm install
 
 ```bash
 npm start
+```
+
+
+## Updating Web-Notion
+
+To update web-notion-core submodule (the js files that builds the website), run the following command:
+
+```bash
+cd ./core && git pull origin master && cd ..
 ```
