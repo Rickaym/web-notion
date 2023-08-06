@@ -40,7 +40,7 @@ npm install
 npm start
 ```
 
-## Overview
+## Requirements
 
 The database that is needed to be used must have the following two columns:
 1. `Name` - This is where the page itself is stored
@@ -49,22 +49,36 @@ The database that is needed to be used must have the following two columns:
 For example:
 ![Notion Database](./readme/database.png)
 
-The content for each page should be stored inside the nested page of the `Name` column. When web-notion serves this page, it will render the content of the nested page into a handlebar layout.
+The content for each page should be stored inside the nested page of the `Name` column. When web-notion serves the page, it will render the content of the nested page into a handlebar layout. This process enables us to display the content of the page in a completely customizable way, and still take advantage of the markdown format that notion provides.
 
-There are two main layouts:
+## Layouts
+
+There are two main layouts that are used to render the pages:
 
 1. `views/index.hbs` - This layout is used to render the root page of the website
 2. `views/page.hbs` - This layout is used for everything else; non-index and nested pages
 
 You can edit these layouts to customize the look of the website. When editing these layouts, you are provided with the following variables:
 
+```json
+{
+        "id": "e78f702d-bed1-413e-9623-a93aa9b7d05d",
+        "createdTime": "2023-07-30T03:26:00.000Z",
+        "lastEditedTime": "2023-08-04T15:32:00.000Z",
+        "slug": "index",
+        "title": "Web-Notion",
+        "pageUrl": "https://www.notion.so/Web-Notion-e78f702dbed1413e9623a93aa9b7d05d",
+        "icon": null,
+        "cover": null,
+        "content": {
+            "markdown": "...",
+            "text": "...",
+            "html": "..."
+        }
+    }
+```
 
-
-The rendered HTML content is then mapped to a route at the slug of the Notion document.
-
-*Note: Static hosting is achieved by running through these steps only once and storing them for later use*
-
-This process enables us to render the decorated markdown content from Notion straight whilst still hvaing it in a custom layout.
+And additionally, `index` pages get a special variable called `pages` which is a list of all the pages (index page excluded).
 
 ### Handlebars
 
@@ -89,11 +103,19 @@ Both the `page.hbs` and `index.hbs` layout have these variables at their disposa
 
 *Note, `index.hbs` also gets an extra variable called **pages** which is a list of all pages in the format of the object above.*
 
+## Updating
+
+To update web-notion-core submodule (the js files that builds the website), run the following command:
+
+```bash
+cd ./core && git pull origin master && cd ..
+```
+
 ## Hosting
 
 ### Static Hosting
 
-Hosting web-notion statically is possible. It is achieved through [a static site generation workflow](https://github.com/Rickaym/web-notion/blob/master/.github/workflows/static.yml) that does the job of fetching content and rendering it all in build time. The drawback however is that changes to the notion document will not be rendered unless the site is rebuilt. (this website is is static!)
+Hosting web-notion statically is possible. It is achieved through [a static site generation workflow](https://github.com/Rickaym/web-notion/blob/master/.github/workflows/static.yml) that does the job of fetching content and rendering it all in build time. The drawback however is that changes to the notion document will not be rendered unless the site is rebuilt.
 
 ### Webserver Hosting
 
