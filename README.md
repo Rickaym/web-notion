@@ -2,7 +2,7 @@
 
 [![Deploy Static Content](https://github.com/Rickaym/web-notion/actions/workflows/static.yml/badge.svg)](https://github.com/Rickaym/web-notion/actions/workflows/static.yml)
 
-Web-notion is an express-handlebar based web server that uses Notion as a database. It is built to be hosted statically, but can also be hosted on a webserver to render updates dynamically.
+Web-notion is an express-handlebar based web server that uses Notion as a content database. It is built to be hosted statically with sparsely edited content, so it must be rebuilt every time there are major changes to the database. However, it can also be hosted on a webserver to render updates dynamically.
 
 # Table of Contents
 
@@ -16,41 +16,51 @@ Web-notion is an express-handlebar based web server that uses Notion as a databa
 
 ## Get Started
 
+### Pre-requisites
 1. Clone the repository
 
 ```bash
 git clone https://github.com/Rickaym/web-notion.git
 ```
-2. Get your Notion API key by setting up an integration [here](https://developers.notion.com/docs/create-a-notion-integration)
-3. Copy the integration secret into `.env`
-4. Configure [`notion.config.js`](./notion.config.js) read the comments in the file for more information
-5. Design your html layouts (with hbs) under [`/views`](./views)
-6. Run the project
 
+2. Install dependencies
+```bash
+npm install
+```
+
+### Setup Notion
+
+3.  Create a Notion integration by following [Step 1: Create an integration](https://developers.notion.com/docs/create-a-notion-integration#step-1-create-an-integration) from the official docs, this is required to access the database
+4. Create a file named `.env` in the project root and copy the integration secret into it in the format of `NOTION_API_KEY="{secret}"`
+5. Then follow [Step 2: Share a database with your integration](https://developers.notion.com/docs/create-a-notion-integration#step-2-share-a-database-with-your-integration) and setup the database to be used with the integration
+6. Copy the ID of the database [like this](https://developers.notion.com/docs/create-a-notion-integration#step-3-save-the-database-id) and set it to `databaseId` in [`notion.config.js`](./notion.config.js)
+
+7. Run the project!
 ```bash
 npm start
 ```
 
 ## Overview
 
-Web notion serves pages using a notion database. Each document in the notion database is fetched and rendered into HTML through the corresponding layout.
+The database that is needed to be used must have the following two columns:
+1. `Name` - This is where the page itself is stored
+2. `Slug` (optional) - This is where the slug of the page is stored, if a value is not present in this column, a slug will be made automatically through the name of the page
+
+For example:
+![Notion Database](./readme/database.png)
+
+The content for each page should be stored inside the nested page of the `Name` column. When web-notion serves this page, it will render the content of the nested page into a handlebar layout.
 
 There are two main layouts:
 
-1. `views/index.hbs` - this layout is used to render the root page of the website
-2. `views/page.hbs` - this layout is used for everything else; non-index and nested pages
+1. `views/index.hbs` - This layout is used to render the root page of the website
+2. `views/page.hbs` - This layout is used for everything else; non-index and nested pages
 
-Edit these layouts to customize the website.
+You can edit these layouts to customize the look of the website. When editing these layouts, you are provided with the following variables:
 
-The rendered HTML content is then mapped to a route that is the slug of the notion document.
 
-Web-notion serve pages in this manner:
 
-1. The notion database is loaded and parsed into a list of pages
-2. Each page is mapped to an endpoint
-2. The Markdown content on each pgae is converted to HTML
-3. When an endpoint is called, the page content is fetched from the list of pages and rendered into the specified layout using handlebars
-4. The rendered HTML is dispatched
+The rendered HTML content is then mapped to a route at the slug of the Notion document.
 
 *Note: Static hosting is achieved by running through these steps only once and storing them for later use*
 

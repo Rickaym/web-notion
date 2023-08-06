@@ -5,10 +5,10 @@
   "description": "Lightweight express.js handlebars web-server based on notion pages.",
   "exports": "./app.js",
   "scripts": {
-    "dev": "nodemon app.js",
-    "devBuild": "nodemon static.js",
-    "start": "node app.js",
-    "build": "node static.js"
+    "dev": "nodemon ./core/app.js",
+    "devBuild": "nodemon ./core/static.js",
+    "start": "node ./core/app.js",
+    "build": "node ./core/static.js"
   },
   "keywords": [
     "notion"
