@@ -3,6 +3,5 @@ logs/**
 build/**
 .env
 **.json
-**.py
 !nodemon.json
-.core/**
+**.py

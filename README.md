@@ -20,7 +20,7 @@ Web-notion is an express-handlebar based web server that uses Notion as a conten
 1. Clone the repository
 
 ```bash
-git clone https://github.com/Rickaym/web-notion.git
+git clone --recurse-submodules https://github.com/Rickaym/web-notion.git
 ```
 
 2. Install dependencies
