@@ -4,6 +4,9 @@
   "type": "module",
   "description": "Lightweight express.js handlebars web-server based on notion pages.",
   "exports": "./app.js",
+  "bin": {
+    "web-notion": "core/index.js"
+  },
   "scripts": {
     "dev": "nodemon ./core/app.js",
     "devBuild": "nodemon ./core/static.js",
