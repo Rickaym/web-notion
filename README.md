@@ -50,7 +50,14 @@ The content for each page should be stored inside the nested page of the `Name` 
 4.  Create a Notion integration by following [Step 1: Create an integration](https://developers.notion.com/docs/create-a-notion-integration#step-1-create-an-integration) from the official docs, this is required to access the database
 4. Create a file named `.env` in the project root and copy the integration secret into it in the format of `NOTION_API_KEY="{secret}"`
 5. Then follow [Step 2: Share a database with your integration](https://developers.notion.com/docs/create-a-notion-integration#step-2-share-a-database-with-your-integration) and setup the database to be used with the integration
-6. Copy the ID of the database [like this](https://developers.notion.com/docs/create-a-notion-integration#step-3-save-the-database-id) and set it to `databaseId` in [`notion.config.js`](./notion.config.js)
+6. Copy the ID of the database [like this](https://developers.notion.com/docs/create-a-notion-integration#step-3-save-the-database-id) and set it to `NOTION_DATABASE_ID` in `.env`
+
+So the `.env` file should look something like this in total:
+
+```env
+NOTION_API_KEY="secret_..."
+NOTION_DATABASE_ID="...-...-..-.."
+```
 
 7. Run the project!
 ```bash
