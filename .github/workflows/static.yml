@@ -37,6 +37,7 @@ jobs:
       - run: npm run build
         env:
           NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v2
