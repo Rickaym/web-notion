@@ -1,6 +1,6 @@
 {
-  "name": "web-notion",
-  "version": "1.0.1",
+  "name": "@rickaym/web-notion",
+  "version": "0.0.1",
   "type": "module",
   "description": "Lightweight express-handlebars server and SSA generator using Notion databases.",
   "bin": {
