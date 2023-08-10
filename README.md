@@ -2,42 +2,43 @@
 
 [![Deploy Static Content](https://github.com/Rickaym/web-notion/actions/workflows/static.yml/badge.svg)](https://github.com/Rickaym/web-notion/actions/workflows/static.yml)
 
-Web-notion is an express-handlebar based web server that uses Notion as a content database. It is built to be hosted statically with sparsely edited content, so it must be rebuilt every time there are major changes to the database. However, it can also be hosted on a webserver to render updates dynamically.
+Web-Notion is a Node.js application that serves a website using Notion databases as the content management system (CMS), it can be hosted as an SSA as well as on a webserver.
 
 # Table of Contents
 
 - [Get Started](#get-started)
-  - [Pre-requisites](#pre-requisites)
+  - [Installation](#installation)
   - [Setup Database](#setup-database)
   - [Setup Notion](#setup-notion)
-- [Customizing the Website](#customizing-the-website)
+  - [Customizing the Website](#customizing-the-website)
 - [Examples](#examples)
 - [Hosting](#hosting)
   - [Static Hosting](#static-hosting)
   - [Webserver Hosting](#webserver-hosting)
-- [Updating Web-Notion](#updating-web-notion)
 
 ## Get Started
 
-### Pre-requisites
-1. Clone the repository
+Web-notion works by fetching the content of a Notion database and rendering it into a website. It does this by using the [Notion API](https://developers.notion.com/) to fetch the content of the database and [handlebars.js](https://handlebarsjs.com/) to render the content into a website.
+
+To get started, follow these steps:
+
+### Installation
+1. Install `web-notion` CLI
 
 ```bash
-git clone --recurse-submodules https://github.com/Rickaym/web-notion.git
+npm i -g web-notion
 ```
 
-2. Install dependencies
+2. Clone the template repository [web-notion-template](https://github.com/Rickaym/web-notion-template), this is the repository that contains the handlebars layouts for rendering content, this is where you will be customizing the website (more on it [here](#customizing-the-website)).
+
 ```bash
-npm install
+git clone https://github.com/Rickaym/web-notion-template.git
 ```
-
 ### Setup Database
 
-3. Create a new database in Notion (it doesn't need to be public)
-
-The database must have the following two columns:
+3. Create a new database in Notion (does not need to be public) Ensure that the database these two columns:
 - `Name` - This is where the page itself is stored
-- `Slug` (optional) - This is where the slug of the page is stored, if a value is not present in this column, a slug will be made automatically through the name of the page
+- `Slug` (optional) - This is where the slug of the page is stored, if a value is not present in this column, a slug will be made using the name of the page
 
 E.g.
 
@@ -52,30 +53,28 @@ The content for each page should be stored inside the nested page of the `Name` 
 5. Then follow [Step 2: Share a database with your integration](https://developers.notion.com/docs/create-a-notion-integration#step-2-share-a-database-with-your-integration) and setup the database to be used with the integration
 6. Copy the ID of the database [like this](https://developers.notion.com/docs/create-a-notion-integration#step-3-save-the-database-id) and set it to `NOTION_DATABASE_ID` in `.env`
 
-So the `.env` file should look something like this in total:
+The `.env` file should look like this when you are done:
 
 ```env
 NOTION_API_KEY="secret_..."
 NOTION_DATABASE_ID="...-...-..-.."
 ```
 
-7. Run the project!
+8. **✨ Run the project!**
 ```bash
-npm start
+npx web-notion serve
 ```
 
 ## Customizing the Website
 
-When web-notion serves the page, it renders the content of the Notion document into a handlebar layout. This process enables us to display the content of the page in a completely customized way, whilst still takeing advantage of the markdown format that notion provides.
-
-You can achieve this customization by editing the layouts in the [`views`](./views) folder.
+Handlebars layouts are provided with HTML, Markdown and Text variants of content when rendering into HTML. This lets us take advantage of the Markdown format that notion provides by default.
 
 There are two main layouts that are used to render the pages:
 
-1. `views/index.hbs` - This layout is used to render the root page of the website
-2. `views/page.hbs` - This layout is used for everything else; non-index and nested pages
+1. `web-notion-template/views/index.hbs` - This layout is used to render the root page of the website
+2. `web-notion-template/views/page.hbs` - This layout is used for everything else; non-index and nested pages
 
-When editing these layouts, you are provided with the following variables through handlebars:
+You are provided with the following data in the layouts:
 
 ```json
 {
@@ -101,38 +100,28 @@ To use these variables, you can use the following syntax in your layout:
 {{variable}}
 ```
 
-While both of the layouts `page.hbs` and `index.hbs` have these variables (`index.hbs` with the context of the index page and `page.hbs` with the page being rendered) `index.hbs` gets a special variable called `pages`. It is a list object that contains all the pages (index page excluded).
+While both of the layouts have these variables (`index.hbs` with the data of the index page and `page.hbs` with the page being rendered) `index.hbs` gets a special variable called `pages`, a list of objects of all the pages (without the index page).
 
 ## Examples
 
-This repository contains an example of a customized website that runs through web-notion. Take a look at [`views/index.hbs`](./views/index.hbs) and [`views/page.hbs`](./views/page.hbs) for how the customization is best done.
+Refer to the [web-notion-template](https://github.com/Rickaym/web-notion-template) repository as an example.
 
 ## Hosting
 
 ### Static Hosting
 
-Hosting web-notion statically is possible. It is achieved through [a static site generation workflow](https://github.com/Rickaym/web-notion/blob/master/.github/workflows/static.yml) that does the job of fetching content and rendering it all in build time. The drawback however is that changes to the notion document will not be rendered unless the site is rebuilt.
+Hosting web-notion as a static site is the easiest way to host it, it is also the cheapest way to host it as it can be hosted on GitHub Pages for free. But as it only pulls data from Notion when the site is built, it is not suitable for websites that require real-time updates.
+
+To generate the static site, run the following command:
+
+```bash
+npx web-notion build
+```
 
 ### Webserver Hosting
 
-Follow these steps to host web-notion on a webserver (this requires the steps in Getting Started to be done):
-
-1. Install dependencies
+To host web-notion on a webserver, you will need to run the following command:
 
 ```bash
-npm install
-```
-2. Run the project
-
-```bash
-npm start
-```
-
-
-## Updating Web-Notion
-
-To update web-notion-core submodule (the js files that builds the website), run the following command:
-
-```bash
-cd ./core && git pull origin master && cd ..
+npx web-notion serve
 ```
