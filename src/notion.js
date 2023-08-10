@@ -1,26 +1,9 @@
-import { readdirSync, readFileSync } from "fs";
 import { config } from "dotenv";
 import Converter from "showdown";
-import handlebars from "handlebars";
-import { app, notion as _notion } from "../notion.config.js";
-import * as helpers from "./helpers.js";
 import { Client } from "@notionhq/client";
+import { HandlebarsFactory } from "./setup.js";
 
 config();
-
-readdirSync(app.partialsDirectory).forEach((file) => {
-  const partialName = file.split(".").slice(0, -1).join(".");
-  const partialContent = readFileSync(
-    `${app.partialsDirectory}/${file}`,
-    "utf-8"
-  );
-  handlebars.registerPartial(partialName, partialContent);
-});
-
-// register helpers
-Object.keys(helpers).forEach((helperName) => {
-  handlebars.registerPartial(helperName, helpers[helperName]);
-});
 
 const converter = new Converter.Converter();
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
@@ -40,7 +23,8 @@ function replaceNotionHeaderURL(url) {
   );
 }
 
-async function blocksToContentDict(rows, blocks) {
+async function parseBlocks(rows, blocks) {
+  const hbs = new HandlebarsFactory().getImport();
   let mdContent = [""];
   let txtContent = "";
 
@@ -134,7 +118,7 @@ async function blocksToContentDict(rows, blocks) {
       case "callout":
         // md to html conversion must happen here, it will not be picked up later
         // escape any sensitive characters
-        mdContent += handlebars.compile(
+        mdContent += hbs.compile(
           `{{> ${block.type} content='${converter.makeHtml(text)}'}}\n\n`
         )();
         break;
@@ -142,7 +126,11 @@ async function blocksToContentDict(rows, blocks) {
         break;
     }
   }
-  return { markdown: mdContent, text: txtContent, html: converter.makeHtml(mdContent) };
+  return {
+    markdown: mdContent,
+    text: txtContent,
+    html: converter.makeHtml(mdContent),
+  };
 }
 
 async function getPageContent(rows, pageId) {
@@ -154,7 +142,7 @@ async function getPageContent(rows, pageId) {
     page_size: 50,
   });
 
-  return await blocksToContentDict(rows, blocks.results);
+  return await parseBlocks(rows, blocks.results);
 }
 
 async function getDatabase(databaseId, withContent) {
@@ -201,5 +189,3 @@ export async function loadDatabase() {
   rows.forEach((row) => (siteData[row.slug] = row));
   return siteData;
 }
-
-export { handlebars };

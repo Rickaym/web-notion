@@ -1,10 +1,8 @@
 import express, { static as static_ } from "express";
-import { create } from "express-handlebars";
-import { app as _app, notion } from "../notion.config.js";
 import { pino as _pino } from "pino";
-import { loadDatabase, SITE_DATA } from "./notion.js";
+import { Config, HandlebarsFactory, getPageRenderData } from "./setup.js";
 import pinoHttp from "pino-http";
-import * as helpers from "./helpers.js";
+import { loadDatabase } from "./notion.js";
 
 const pino = pinoHttp(
   {
@@ -18,61 +16,46 @@ const pino = pinoHttp(
       },
     },
   },
-  _pino.destination(`./logs/combined.log`)
 );
 
-const hbs = create({
-  extname: "hbs",
-  partialsDir: _app.partialsDirectory,
-  helpers,
-});
-
-hbs.getPartials();
-
-function initApp() {
+export async function initializeExpressApp() {
+  const siteData = await loadDatabase(true);
+  const appConfig = new Config().getJSON();
   const app = express();
+  const hbs = new HandlebarsFactory().getCompiler();
+
   // Initializing handlebars engine
   app.engine("hbs", hbs.engine);
   app.set("view engine", "hbs");
-  app.set("views", _app.viewsDirectory);
+  app.set("views", appConfig.viewsDirectory);
 
-  app.use(static_(_app.staticDir || "public"));
+  app.use(static_(appConfig.staticDir || "public"));
   app.use(pino);
 
   app.get("/", (req, res) =>
-    res.render("index", {
-      layout: false,
-      title: _app.name,
-      pages: SITE_DATA,
-      ...(SITE_DATA["index"] || {}),
-    })
+    res.render("index", getPageRenderData(siteData, "index"))
   );
 
-  for (const page of Object.values(SITE_DATA)) {
+  for (const page of Object.values(siteData)) {
     if (page.slug === "index") {
-      if (notion.linkOriginalPage) {
+      if (appConfig.linkOriginalPage) {
         app.get("/page", (req, res) => res.redirect(page.pageUrl));
       }
       continue;
     }
 
     app.get(`/${page.slug}`, (req, res) =>
-      res.render("page", {
-        layout: false,
-        title: _app.name,
-        ...page,
-      })
+      res.render("page", getPageRenderData(siteData, page.slug))
     );
 
-    if (notion.linkOriginalPage) {
+    if (appConfig.linkOriginalPage) {
       app.get(`/${page.slug}/page`, (req, res) => res.redirect(page.pageUrl));
     }
   }
 
-  app.listen(_app.port, () => {
+  app.listen(appConfig.port, () => {
     console.log(
-      `App "${_app.name}" listening on http://localhost:${_app.port}`
+      `App "${appConfig.name}" listening on http://localhost:${appConfig.port}`
     );
   });
 }
-

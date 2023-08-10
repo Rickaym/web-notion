@@ -1,11 +1,10 @@
 {
   "name": "web-notion",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
-  "description": "Lightweight express.js handlebars web-server based on notion pages.",
-  "exports": "./app.js",
+  "description": "Lightweight express-handlebars server and SSA generator using Notion databases.",
   "bin": {
-    "web-notion": "core/index.js"
+    "web-notion": "index.js"
   },
   "scripts": {
     "dev": "nodemon ./core/app.js",
@@ -20,6 +19,7 @@
   "license": "MIT",
   "dependencies": {
     "@notionhq/client": "^2.2.9",
+    "argparse": "^2.0.1",
     "dotenv": "^16.0.1",
     "express": "^4.18.2",
     "express-handlebars": "^6.0.6",
