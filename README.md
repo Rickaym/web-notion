@@ -26,7 +26,7 @@ To get started, follow these steps:
 1. Install `web-notion` CLI
 
 ```bash
-npm i -g web-notion
+npm i -g @rickaym/web-notion
 ```
 
 2. Clone the template repository [web-notion-template](https://github.com/Rickaym/web-notion-template), this is the repository that contains the handlebars layouts for rendering content, this is where you will be customizing the website (more on it [here](#customizing-the-website)).
@@ -126,4 +126,4 @@ To host web-notion on a webserver, you will need to run the following command:
 npx web-notion serve
 ```
 
-[version]: https://cf.dispatch.pyaesonemyo.dev/badge/npm/@rickaym/web-notion
+[version]: https://gen.pyaesonemyo.workers.dev/badge/npm/@rickaym/web-notion
