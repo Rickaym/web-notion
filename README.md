@@ -1,6 +1,8 @@
 # Web-Notion
 
-[![npm][version]](https://www.npmjs.com/package/@rickaym/web-notion)
+<a href="https://www.npmjs.com/package/@rickaym/web-notion">
+  <img src="https://gen.pyaesonemyo.workers.dev/badge/npm/@rickaym/web-notion" alt-text="npm-version">
+</a>
 
 Web-Notion is a Node.js application that serves a website using Notion databases as the content management system (CMS), it can be hosted as an SSA as well as on a webserver.
 
@@ -125,5 +127,3 @@ To host web-notion on a webserver, you will need to run the following command:
 ```bash
 npx web-notion serve
 ```
-
-[version]: https://gen.pyaesonemyo.workers.dev/badge/npm/@rickaym/web-notion
