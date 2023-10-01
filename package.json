@@ -1,16 +1,16 @@
 {
-  "name": "@rickaym/web-notion",
+  "name": "web-notion",
   "version": "0.0.1",
   "type": "module",
-  "description": "Lightweight express-handlebars server and SSA generator using Notion databases.",
+  "description": "Lightweight website server using Notion databases.",
   "bin": {
     "web-notion": "index.js"
   },
   "scripts": {
-    "dev": "nodemon ./core/app.js",
-    "devBuild": "nodemon ./core/static.js",
-    "start": "node ./core/app.js",
-    "build": "node ./core/static.js"
+    "dev": "nodemon index.js serve",
+    "devBuild": "nodemon index.js build",
+    "start": "node index.js serve",
+    "build": "node index.js build"
   },
   "keywords": [
     "notion"
