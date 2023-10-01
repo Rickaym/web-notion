@@ -5,6 +5,7 @@ export function get_content_slice(content, length, fullSentences) {
 }
 
 export function sentence_split(content, length) {
+  if (!content) return "";
   const sentences = content.split(".");
   let result = "";
   let i = 0;
