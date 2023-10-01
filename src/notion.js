@@ -16,6 +16,7 @@ function makeTitleSlug(title) {
     .replace(/[^\w-]+/g, "");
 }
 
+
 function replaceNotionHeaderURL(url) {
   return url.replace(
     /notion:\/\/www\.notion\.so\/([a-zA-Z0-9_-]+)\/([a-zA-Z_-]+)-[a-zA-Z0-9_-]+(#\S*)?/g,
@@ -23,15 +24,27 @@ function replaceNotionHeaderURL(url) {
   );
 }
 
-async function parseBlocks(rows, blocks) {
-  const hbs = new HandlebarsFactory().getImport();
-  let mdContent = [""];
-  let txtContent = "";
 
-  for (const block of blocks) {
+async function getPageContent(pages, pageId) {
+  if (PARSED_PAGE_IDS.includes(pageId)) return "";
+
+  PARSED_PAGE_IDS.push(pageId);
+
+  const blocks = await notion.blocks.children.list({
+    block_id: pageId,
+    page_size: 50,
+  });
+
+  const hbs = new HandlebarsFactory().getImport();
+
+  let contentMd = "";
+  let contentTxt = "";
+
+  for (const block of blocks.results) {
     let text = "";
     block[block.type].rich_text?.forEach((rich_text) => {
       let partialText = rich_text.plain_text;
+
       if (rich_text.annotations) {
         if (rich_text.annotations.bold) partialText = `**${partialText}**`;
         if (rich_text.annotations.italic) partialText = `*${partialText}*`;
@@ -39,45 +52,48 @@ async function parseBlocks(rows, blocks) {
           partialText = `~~${partialText}~~`;
         if (rich_text.annotations.code) partialText = "`" + partialText + "`";
       }
+
       if (rich_text.href) partialText = `[${partialText}](${rich_text.href})`;
+
       text += partialText;
     });
+
     text = replaceNotionHeaderURL(text);
-    txtContent += text;
+    contentTxt += text;
 
     switch (block.type) {
       case "heading_1":
-        mdContent += `# ${text}\n\n`;
+        contentMd += `# ${text}\n\n`;
         break;
       case "heading_2":
-        mdContent += `## ${text}\n\n`;
+        contentMd += `## ${text}\n\n`;
         break;
       case "heading_3":
-        mdContent += `### ${text}\n\n`;
+        contentMd += `### ${text}\n\n`;
         break;
       case "paragraph":
-        mdContent += `${text}\n\n`;
+        contentMd += `${text}\n\n`;
         break;
       case "bulleted_list_item":
-        mdContent += `* ${text}\n`;
+        contentMd += `* ${text}\n`;
         break;
       case "numbered_list_item":
-        mdContent += `1. ${text}\n`;
+        contentMd += `1. ${text}\n`;
         break;
       case "to_do":
-        mdContent += `- [ ] ${text}\n`;
+        contentMd += `- [ ] ${text}\n`;
         break;
       case "toggle":
-        mdContent += `> ${text}\n`;
+        contentMd += `> ${text}\n`;
         break;
       case "quote":
-        mdContent += `> ${text}\n`;
+        contentMd += `> ${text}\n`;
         break;
       case "video":
-        mdContent += `${text}\n\n`;
+        contentMd += `${text}\n\n`;
         break;
       case "code":
-        mdContent += `\`\`\`${block.code.language}\n${block.code.rich_text[0].plain_text}\n\`\`\`\n\n`;
+        contentMd += `\`\`\`${block.code.language}\n${block.code.rich_text[0].plain_text}\n\`\`\`\n\n`;
         break;
       // Handle case for unsupported block type
       case "bookmark":
@@ -97,28 +113,18 @@ async function parseBlocks(rows, blocks) {
       case "table_row":
       case "template":
       case "pdf":
-        mdContent += `${text}\n\n`;
+        contentMd += `${text}\n\n`;
         break;
       case "child_page":
         const page = await notion.pages.retrieve({ page_id: block.id });
         const slug = makeTitleSlug(block.child_page.title);
-        rows.push({
-          id: page.id,
-          createdTime: page.created_time,
-          lastEditedTime: page.last_edited_time,
-          slug: slug,
-          title: block.child_page.title,
-          pageUrl: page.url,
-          icon: page.icon,
-          cover: page.cover,
-          content: await getPageContent(rows, page.id),
-        });
-        mdContent += `[${block.child_page.title}](./${slug})\n\n`;
+        parsePage(page).forEach((page) => pages.push(page));
+        contentMd += `[${block.child_page.title}](./${slug})\n\n`;
         break;
       case "callout":
         // md to html conversion must happen here, it will not be picked up later
         // escape any sensitive characters
-        mdContent += hbs.compile(
+        contentMd += hbs.compile(
           `{{> ${block.type} content='${converter.makeHtml(text)}'}}\n\n`
         )();
         break;
@@ -127,65 +133,48 @@ async function parseBlocks(rows, blocks) {
     }
   }
   return {
-    markdown: mdContent,
-    text: txtContent,
-    html: converter.makeHtml(mdContent),
+    markdown: contentMd,
+    text: contentTxt,
+    html: converter.makeHtml(contentMd),
   };
 }
 
-async function getPageContent(rows, pageId) {
-  if (PARSED_PAGE_IDS.includes(pageId)) return "";
-  PARSED_PAGE_IDS.push(pageId);
+async function parsePage(page) {
+  // Skip pages without a slug
+  const pages = []
+  if (!page.properties.Name.title[0]) return pages;
 
-  const blocks = await notion.blocks.children.list({
-    block_id: pageId,
-    page_size: 50,
-  });
+  const title = page.properties.Name.title[0].plain_text;
+  let slug = page.properties.Slug.rich_text.length >= 1 ? page.properties.Slug.rich_text[0].plain_text : makeTitleSlug(title);
 
-  return await parseBlocks(rows, blocks.results);
-}
-
-async function getDatabase(databaseId, withContent) {
-  const query = await notion.databases.query({
-    database_id: databaseId,
-  });
-
-  const rows = [];
-
-  for (const page of query.results) {
-    // Skip pages without a slug
-    if (!page.properties.Name.title[0]) continue;
-
-    const title = page.properties.Name.title[0].plain_text;
-
-    let slug;
-    if (page.properties.Slug.rich_text.length === 0) {
-      slug = makeTitleSlug(title);
-    } else {
-      slug = page.properties.Slug.rich_text[0].plain_text;
-    }
-
-    new Date(page.last_edited_time);
-
-    rows.push({
-      id: page.id,
-      createdTime: page.created_time,
-      lastEditedTime: page.last_edited_time,
-      slug: slug,
-      title: title,
-      pageUrl: page.url,
-      icon: page.icon,
-      cover: page.cover,
-      content: withContent ? await getPageContent(rows, page.id) : null,
-    });
+  if (slug !== "index" && process.env.ENVIRONMENT !== "production") {
+    slug += ".html";
   }
+  pages.push({
+    id: page.id,
+    createdTime: page.created_time,
+    lastEditedTime: page.last_edited_time,
+    slug: slug,
+    title: title,
+    pageUrl: page.url,
+    icon: page.icon,
+    cover: page.cover,
+    content: await getPageContent(pages, page.id),
+  });
 
-  return rows;
+  return pages;
 }
 
 export async function loadDatabase() {
   let siteData = {};
-  const rows = await getDatabase(process.env.NOTION_DATABASE_ID, true);
-  rows.forEach((row) => (siteData[row.slug] = row));
+
+  const query = await notion.databases.query({
+    database_id: process.env.NOTION_DATABASE_ID,
+  });
+
+  for (const page of query.results) {
+    (await parsePage(page)).forEach((page) => siteData[page.slug] = page);
+
+  }
   return siteData;
 }
