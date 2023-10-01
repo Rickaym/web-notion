@@ -90,6 +90,7 @@ export function getPageRenderData(siteData, pageSlug) {
   if (pageSlug === "index") {
     data.pages = { ...siteData };
     delete data.pages["index"];
+    data.latest = helpers.get_latest(data.pages);
   }
   return data;
 }
