@@ -20,13 +20,38 @@ export function get_page(pageSlug, key) {
   return SITE_DATA.find((page) => page.slug === pageSlug)[key];
 }
 
-export function get_latest(pages) {
+export function compare(v1, operator, v2) {
+  switch (operator) {
+    case '==':
+      return (v1 == v2);
+    case '!=':
+      return (v1 != v2);
+    case '===':
+      return (v1 === v2);
+    case '<':
+      return (v1 < v2);
+    case '<=':
+      return (v1 <= v2);
+    case '>':
+      return (v1 > v2);
+    case '>=':
+      return (v1 >= v2);
+    case '&&':
+      return !!(v1 && v2);
+    case '||':
+      return !!(v1 || v2);
+    default:
+      return false;
+  }
+}
+
+export function get_latest(pages, nth = 0) {
   // returns the latest page
   return Object.values(pages)
     .sort((a, b) => {
       return new Date(b.lastEditedTime) - new Date(a.lastEditedTime);
     })
-    .slice(0, 1)[0];
+    .slice(0, 1)[nth];
 }
 
 export function get_readtime(content) {
@@ -46,4 +71,3 @@ export function get_datetime(date) {
     })
     .toUpperCase();
 }
-
