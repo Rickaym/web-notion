@@ -1,15 +1,20 @@
 import { promises as fs } from "fs";
 import { Config, HandlebarsFactory, getPageRenderData } from "./setup.js";
 import { loadDatabase } from "./notion.js";
+import path from "path";
 
 async function generateStaticFile(buildDirectory, slug, content) {
-  await fs.writeFile(`${buildDirectory}/${slug}.html`, content);
+  let fp = path.join(buildDirectory, slug);
+  if (!fp.endsWith(".html")) {
+    fp += ".html";
+  }
+  await fs.writeFile(fp, content);
 }
 
 async function cleanBuildDirectory(buildDirectory) {
   const files = await fs.readdir(buildDirectory);
   for (const itemName of files) {
-    const itemPath = `${buildDirectory}/${itemName}`;
+    const itemPath = path.join(buildDirectory, itemName);
 
     const stat = await fs.stat(itemPath);
     if (stat.isFile()) {
@@ -25,22 +30,22 @@ export async function generateSSA() {
   const appConfig = new Config().getJSON();
   const handlebars = new HandlebarsFactory().getImport();
 
-  await fs.mkdir(appConfig.buildDirectory).catch(() => {});
+  await fs.mkdir(appConfig.buildDirectory).catch(() => { });
   await cleanBuildDirectory(appConfig.buildDirectory);
 
   const indexRender = handlebars.compile(
     (
-      await fs.readFile(`${appConfig.viewsDirectory}/index.hbs`, "utf-8")
+      await fs.readFile(path.join(appConfig.viewsDirectory, "index.hbs"), "utf-8")
     ).toString()
   );
   const pageRender = handlebars.compile(
     (
-      await fs.readFile(`${appConfig.viewsDirectory}/page.hbs`, "utf-8")
+      await fs.readFile(path.join(appConfig.viewsDirectory, "page.hbs"), "utf-8")
     ).toString()
   );
   const redirectRender = handlebars.compile(
     (
-      await fs.readFile(`${appConfig.viewsDirectory}/redirect.hbs`, "utf-8")
+      await fs.readFile(path.join(appConfig.viewsDirectory, "redirect.hbs"), "utf-8")
     ).toString()
   );
 
@@ -65,11 +70,13 @@ export async function generateSSA() {
     );
 
     if (appConfig.linkOriginalPage) {
-      const subdir = `${appConfig.buildDirectory}/${page.slug}`;
-      fs.mkdir(subdir).catch(() => {});
+      // remove .html from the slug to create a subdirectory
+      const subdir = path.join(appConfig.buildDirectory, page.slug.replace(/\.html$/, ''));
+      
+      await fs.mkdir(subdir);
       await generateStaticFile(
-        appConfig.buildDirectory,
-        `${page.slug}/page`,
+        '',
+        path.join(subdir, "page"),
         redirectRender({ pageUrl: page.pageUrl })
       );
     }

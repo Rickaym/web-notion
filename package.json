@@ -1,6 +1,6 @@
 {
   "name": "web-notion",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
   "description": "Lightweight website server using Notion databases.",
   "bin": {

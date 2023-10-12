@@ -1,6 +1,7 @@
 import { create } from "express-handlebars";
 import { promises as fs } from "fs";
 import * as helpers from "./helpers.js";
+import path from "path";
 
 export class Config {
   constructor() {
@@ -50,7 +51,7 @@ export class HandlebarsFactory {
     (await fs.readdir(config.partialsDirectory)).forEach(async (file) => {
       hbs.handlebars.registerPartial(
         file.split(".").slice(0, -1).join("."),
-        await fs.readFile(`${config.partialsDirectory}/${file}`, "utf-8")
+        await fs.readFile(path.join(config.partialsDirectory, file), "utf-8")
       );
     });
     this.hbs = hbs;
